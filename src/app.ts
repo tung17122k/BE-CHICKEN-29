@@ -3,6 +3,7 @@ import express from 'express'
 import 'dotenv/config'
 import apiRoutes from './routes/api';
 const app = express()
+import getConnection from './config/database';
 
 
 // config req.body
@@ -25,6 +26,13 @@ app.use((req, res, next) => {
 
 // config routes
 apiRoutes(app);
+
+
+// seeding database 
+
+
+// connect to database
+getConnection()
 
 
 
