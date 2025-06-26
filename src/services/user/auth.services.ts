@@ -109,4 +109,22 @@ const postLoginService = async (email: string, password: string) => {
     return { access_token, user: payload };
 }
 
-export { postRegisterService, postVerifyService, postLoginService };
+
+const GoogleCallbackService = async (user) => {
+    const payload = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        accountType: user.accountType,
+        name: user.name || "",
+        roleId: user.roleId,
+        phone: user.phone || "",
+        address: user.address || "",
+    }
+    const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+        expiresIn: '30d' // Thời gian hết hạn của token
+    })
+    return { access_token, user: payload };
+}
+
+export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService };

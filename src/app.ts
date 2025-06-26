@@ -3,7 +3,10 @@ import express from 'express'
 import 'dotenv/config'
 import apiRoutes from './routes/api';
 import getConnection from './config/database';
+import "./config/passport"
 import cors from 'cors';
+import passport from 'passport';
+
 
 
 const app = express()
@@ -22,6 +25,8 @@ app.set('views', __dirname + '/views')
 
 //config static files
 app.use(express.static("public"))
+
+app.use(passport.initialize());
 
 // config global middleware
 app.use((req, res, next) => {

@@ -11,6 +11,8 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         "/register",
         "/logout",
         "/verify",
+        "/auth/google",
+        "/auth/google/callback"
     ]
 
     if (whiteList.includes(path)) {

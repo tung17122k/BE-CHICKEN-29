@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { RegisterSchema, TRegisterSchema, } from "../../validation/register.schema";
-import { postRegisterService, postVerifyService, postLoginService } from "../../services/user/auth.services";
+import { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService } from "../../services/user/auth.services";
 import { TVerifySchema, VerifySchema } from "../../validation/verify.schema";
 import { LoginSchema, TLoginSchema } from "../../validation/login.schema";
+import { User } from "@prisma/client";
 
 const postRegister = async (req: Request, res: Response) => {
     const { email, password, confirmPassword } = req.body as TRegisterSchema
@@ -117,4 +118,19 @@ const postLogin = async (req: Request, res: Response) => {
 
 }
 
-export { postRegister, postVerify, postLogin };
+
+const GoogleCallbackController = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    console.log("Google user:", user);
+    const result = await GoogleCallbackService(user as Express.User);
+    if (req.user) {
+        const user = req.user as Express.User;
+        res.status(200).json({
+            message: "Login successful",
+            user: user,
+            accessToken: result.access_token
+        });
+    }
+}
+
+export { postRegister, postVerify, postLogin, GoogleCallbackController };

@@ -1,6 +1,8 @@
 import express, { Express } from 'express';
-import { postRegister, postVerify, postLogin } from '../controllers/user/auth.controller';
+import { postRegister, postVerify, postLogin, GoogleCallbackController } from '../controllers/user/auth.controller';
 import { checkValidJwt } from '../middleware/jwt.middleware';
+import passport from 'passport';
+
 
 const router = express.Router();
 
@@ -11,6 +13,15 @@ const apiRoutes = (app: Express) => {
     router.post('/verify', postVerify)
 
     router.post('/login', postLogin)
+
+    router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+    // Google callback
+    router.get(
+        "/auth/google/callback",
+        passport.authenticate("google", { session: false }),
+        GoogleCallbackController
+    );
 
     app.use('/', checkValidJwt, router);
 };
