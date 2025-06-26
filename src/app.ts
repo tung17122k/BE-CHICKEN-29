@@ -1,10 +1,16 @@
-
+/// <reference path="./types/index.d.ts" />
 import express from 'express'
 import 'dotenv/config'
 import apiRoutes from './routes/api';
-const app = express()
 import getConnection from './config/database';
+import cors from 'cors';
 
+
+const app = express()
+
+
+// config cors 
+app.use(cors())
 
 // config req.body
 app.use(express.urlencoded({ extended: true }));
@@ -19,7 +25,7 @@ app.use(express.static("public"))
 
 // config global middleware
 app.use((req, res, next) => {
-
+    // res.locals.user = req.user || null;
     next();
 })
 

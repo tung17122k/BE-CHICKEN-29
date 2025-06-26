@@ -22,7 +22,8 @@ model User {
   phone            String? @db.VarChar(20)
   isVerified       Boolean @default(false)
   verificationCode String? @db.VarChar(6)
-  Role             Role?   @relation(fields: [roleId], references: [id])
+  accountType      String? @db.VarChar(50)
+  role             Role?   @relation(fields: [roleId], references: [id])
   roleId           Int?
 
   @@map("users")
