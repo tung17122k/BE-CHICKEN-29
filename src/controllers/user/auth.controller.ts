@@ -1,13 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { RegisterSchema, TRegisterSchema, } from "../../validation/register.schema";
-import { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService } from "../../services/user/auth.services";
+import { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService } from "../../services/user/auth.services";
 import { TVerifySchema, VerifySchema } from "../../validation/verify.schema";
 import { LoginSchema, TLoginSchema } from "../../validation/login.schema";
 import { User } from "@prisma/client";
 
 const postRegister = async (req: Request, res: Response) => {
     const { email, password, confirmPassword } = req.body as TRegisterSchema
-
 
     try {
         const validate = await RegisterSchema.safeParseAsync(req.body);
@@ -82,7 +81,6 @@ const postVerify = async (req: Request, res: Response) => {
 const postLogin = async (req: Request, res: Response) => {
     const { email, password } = req.body as TLoginSchema;
     try {
-
         const validate = await LoginSchema.safeParseAsync(req.body);
 
         if (!validate.success) {
@@ -101,9 +99,18 @@ const postLogin = async (req: Request, res: Response) => {
         } else {
             const result = await postLoginService(email, password);
             if (result) {
+                res.cookie("refresh_token", result.refresh_token, {
+                    // httpOnly: true, // Không thể truy cập từ JavaScript (chống XSS)
+                    // secure: true, // Chỉ gửi qua HTTPS (cần bật khi deploy)
+                    sameSite: "strict",
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+                });
+
+
                 res.status(200).json({
                     message: "Đăng nhập thành công",
-                    accessToken: result.access_token,
+                    access_token: result.access_token,
+                    refresh_token: result.refresh_token,
                     user: result.user
                 });
             } else {
@@ -111,8 +118,9 @@ const postLogin = async (req: Request, res: Response) => {
             }
         }
     } catch (error) {
-        console.error("Error during login:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(error.statusCode ? error.statusCode : 500).json({
+            error: error.message || "Internal server error",
+        });
 
     }
 
@@ -128,9 +136,32 @@ const GoogleCallbackController = async (req: Request, res: Response, next: NextF
         res.status(200).json({
             message: "Login successful",
             user: user,
-            accessToken: result.access_token
+            access_token: result.access_token
         });
     }
 }
 
-export { postRegister, postVerify, postLogin, GoogleCallbackController };
+const refreshTokenController = async (req: Request, res: Response) => {
+    try {
+        const refresh_token = req.cookies.refresh_token;
+        if (!refresh_token) {
+            res.status(401).json({
+                message: "Refresh token không hợp lệ.",
+            });
+        }
+        const result = await refreshTokenService(refresh_token)
+        console.log("result", result);
+        res.status(200).json({
+            message: "Token làm mới thành công",
+            data: result,
+        });
+    } catch (error) {
+        console.log("error.statusCode", error.statusCode);
+
+        res.status(error.statusCode ? error.statusCode : 500).json({
+            error: error.message || "Internal server error",
+        });
+    }
+}
+
+export { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController };

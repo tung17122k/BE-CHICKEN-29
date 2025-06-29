@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { postRegister, postVerify, postLogin, GoogleCallbackController } from '../controllers/user/auth.controller';
+import { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController } from '../controllers/user/auth.controller';
 import { checkValidJwt } from '../middleware/jwt.middleware';
 import passport from 'passport';
 
@@ -22,6 +22,8 @@ const apiRoutes = (app: Express) => {
         passport.authenticate("google", { session: false }),
         GoogleCallbackController
     );
+
+    router.post("/refresh-token", refreshTokenController);
 
     app.use('/', checkValidJwt, router);
 };
