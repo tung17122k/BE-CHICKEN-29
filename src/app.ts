@@ -6,7 +6,7 @@ import getConnection from './config/database';
 import "./config/passport"
 import cors from 'cors';
 import passport from 'passport';
-
+import cookieParser from 'cookie-parser';
 
 
 const app = express()
@@ -18,6 +18,9 @@ app.use(cors())
 // config req.body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// config cookie parser
+app.use(cookieParser());
 
 //config view engine
 app.set('view engine', 'ejs')

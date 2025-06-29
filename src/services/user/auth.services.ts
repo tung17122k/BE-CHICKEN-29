@@ -3,6 +3,7 @@ import { prisma } from "../../config/client";
 import { ACCOUNT_TYPE } from "../../config/constant";
 import { sendVerificationEmail } from "../../config/mail";
 import jwt from "jsonwebtoken";
+import { AppError } from "../../utils/appError";
 const saltRounds = 10;
 
 
@@ -37,6 +38,8 @@ const postRegisterService = async (email: string, password: string) => {
 
         if (newUser) {
             sendVerificationEmail(email, verificationCode);
+        } else {
+            throw new Error("Không thể tạo tài khoản người dùng");
         }
 
         return newUser;
@@ -75,56 +78,130 @@ const postVerifyService = async (email: string, code: string) => {
 }
 
 const postLoginService = async (email: string, password: string) => {
-    const user = await prisma.user.findUnique({
-        where: {
-            email: email,
-            isVerified: true
-        },
-        include: {
-            role: true
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email,
+                isVerified: true
+            },
+            include: {
+                role: true
+            }
+        })
+        if (!user) {
+            throw new AppError(`User ${email} not found`, 404);
         }
-    })
-    if (!user) {
-        throw new Error(`User ${email} not found`);
-    }
-    const isMatch = await comparePassword(password, user.password)
+        const isMatch = await comparePassword(password, user.password)
 
-    if (!isMatch) {
-        throw new Error(`Incorrect password`);
+        if (!isMatch) {
+            throw new AppError(`Incorrect password`, 401);
+        }
+
+        const payload = {
+            id: user.id,
+            email: user.email,
+            role: user.role.name,
+            accountType: user.accountType,
+            name: user.name || "",
+            roleId: user.roleId,
+            phone: user.phone || "",
+            address: user.address || "",
+        }
+        const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+            expiresIn: '7d' // Thời gian hết hạn của token
+        });
+
+        const refresh_token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET as string, {
+            expiresIn: '30d',
+        });
+
+        return { access_token, refresh_token, user: payload };
+    } catch (error) {
+        throw new AppError(error.message, error.statusCode || 500);
     }
 
-    const payload = {
-        id: user.id,
-        email: user.email,
-        role: user.role.name,
-        accountType: user.accountType,
-        name: user.name || "",
-        roleId: user.roleId,
-        phone: user.phone || "",
-        address: user.address || "",
-    }
-    const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
-        expiresIn: '30d' // Thời gian hết hạn của token
-    })
-    return { access_token, user: payload };
 }
 
 
 const GoogleCallbackService = async (user) => {
-    const payload = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        accountType: user.accountType,
-        name: user.name || "",
-        roleId: user.roleId,
-        phone: user.phone || "",
-        address: user.address || "",
+    if (!user) {
+        throw new AppError("User not found", 404);
     }
-    const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
-        expiresIn: '30d' // Thời gian hết hạn của token
-    })
-    return { access_token, user: payload };
+    try {
+        const payload = {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            accountType: user.accountType,
+            name: user.name || "",
+            roleId: user.roleId,
+            phone: user.phone || "",
+            address: user.address || "",
+        }
+        const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+            expiresIn: '7d' // Thời gian hết hạn của token
+        })
+        const refresh_token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET as string, {
+            expiresIn: '30d',
+        });
+        return { access_token, refresh_token, user: payload };
+    } catch (error) {
+        throw new AppError(error.message, error.statusCode);
+    }
+
 }
 
-export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService };
+const refreshTokenService = async (refresh_token: string) => {
+    try {
+        if (!refresh_token) {
+            throw new AppError("Refresh token không hợp lệ.", 401);
+        }
+        const decoded: any = jwt.verify(refresh_token, process.env.JWT_REFRESH_SECRET);
+
+        if (!decoded.email) {
+            throw new AppError("User not found", 400);
+        }
+
+        const user = await prisma.user.findUnique({
+            where: {
+                email: decoded.email,
+                isVerified: true
+            },
+            include: {
+                role: true
+            }
+
+        })
+
+        if (!user) {
+            throw new AppError("User not found", 404);
+        }
+
+        const payload = {
+            id: user.id,
+            email: user.email,
+            role: user.role.name,
+            accountType: user.accountType,
+            name: user.name || "",
+            roleId: user.roleId,
+            phone: user.phone || "",
+            address: user.address || "",
+        }
+
+        const newAccessToken = jwt.sign(
+            payload,
+            process.env.JWT_SECRET as string,
+            {
+                expiresIn: '7d'
+            }
+        );
+
+        return { access_token: newAccessToken };
+    } catch (error) {
+        throw new AppError(error.message, error.statusCode);
+    }
+
+
+}
+
+export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService };

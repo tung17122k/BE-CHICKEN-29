@@ -31,9 +31,25 @@ passport.use(new GoogleStrategy({
                     phone: ""
                 }
             })
-            return done(null, userCreate);
+            return done(null, {
+                id: userCreate.id,
+                email: userCreate.email,
+                accountType: userCreate.accountType,
+                name: userCreate.name || "",
+                roleId: userCreate.roleId,
+                phone: userCreate.phone || "",
+                address: userCreate.address || "",
+            });
         } else {
-            return done(null, user);
+            return done(null, {
+                id: user.id,
+                email: user.email,
+                accountType: user.accountType,
+                name: user.name || "",
+                roleId: user.roleId,
+                phone: user.phone || "",
+                address: user.address || "",
+            });
         }
     } catch (error) {
         done(error, false);
