@@ -26,8 +26,16 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         res.status(401).json({ message: "Unauthorized access, token is missing" });
     } else {
         try {
+            console.log("req.method", req.method);
+
             const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
             if (path === "/users" && decoded.role !== "ADMIN") {
+                res.status(403).json({
+                    message: "Forbidden. You are not allowed to access this resource.",
+                    errorCode: 403,
+                });
+            }
+            if (req.method === 'POST' && path === "/product" && decoded.role !== "ADMIN") {
                 res.status(403).json({
                     message: "Forbidden. You are not allowed to access this resource.",
                     errorCode: 403,

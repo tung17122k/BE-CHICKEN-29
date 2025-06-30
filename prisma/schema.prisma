@@ -23,8 +23,8 @@ model User {
   isVerified       Boolean @default(false)
   verificationCode String? @db.VarChar(6)
   accountType      String? @db.VarChar(50)
-  role             Role?   @relation(fields: [roleId], references: [id])
-  roleId           Int?
+  role             Role    @relation(fields: [roleId], references: [id])
+  roleId           Int
 
   @@map("users")
 }
@@ -36,4 +36,29 @@ model Role {
   users       User[]
 
   @@map("roles")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  price       Int
+  image       String?  @db.VarChar(255)
+  description String   @db.MediumText
+  quantity    Int
+  sold        Int      @default(0)
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id])
+  // cartDetail  CartDetail[]
+  // OrderDetail OrderDetail[]
+
+  @@map("products")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String    @db.MediumText
+  Product     Product[]
+
+  @@map("categories")
 }
