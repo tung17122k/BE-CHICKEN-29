@@ -204,4 +204,4 @@ const refreshTokenService = async (refresh_token: string) => {
 
 }
 
-export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService };
+export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService, hashPassword };

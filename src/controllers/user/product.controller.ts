@@ -3,21 +3,33 @@ import { countTotalPages, getAllProduct, handleCreateProductService, handleGetPr
 import { ProductSchema, TProductSchema } from "../../validation/product/product.schema";
 
 const getProductController = async (req: Request, res: Response) => {
-    const { page, limit, name } = req.query;
+    const { page, limit, category } = req.query;
     try {
         if (!page && !limit) {
-            const products = await getAllProduct();
-            res.status(200).json({
-                message: "Get product successfully",
-                data: products
-            });
+            if (!category) {
+                const products = await getAllProduct(category as string);
+                res.status(200).json({
+                    message: "Get product successfully",
+                    data: products,
+                });
+            } else {
+                const products = await getAllProduct(category as string);
+                res.status(200).json({
+                    message: "Get product successfully",
+                    data: products
+                });
+            }
+
+
         } else {
-            const totalPages = await countTotalPages(+limit)
-            const products = await handleGetProductService(+page, + limit, name as string);
+            // const totalPages = await countTotalPages(+limit)
+            const result = await handleGetProductService(+page, + limit, category as string);
+            console.log("result", result);
+
             res.status(200).json({
                 message: "Get product successfully",
-                data: products,
-                totalPages: totalPages
+                data: result.products,
+                totalPages: result.totalPages
             });
         }
     } catch (error) {

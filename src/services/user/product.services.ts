@@ -6,29 +6,69 @@ const countTotalPages = async (limit: number) => {
     return totalPages
 }
 
-const getAllProduct = async () => {
+const getAllProduct = async (categoryName?: string) => {
+    const category = await prisma.category.findFirst({
+        where: {
+            name: categoryName
+        }
+    })
+    const categoryId = category.id
+
     try {
-        const products = await prisma.product.findMany()
-        return products
+        if (categoryName) {
+            const products = await prisma.product.findMany({
+                where: {
+                    categoryId: categoryId
+                }
+            })
+            return products
+        } else {
+            const products = await prisma.product.findMany()
+            return products
+        }
     } catch (error) {
         throw new Error("Không thể lấy danh sách sản phẩm");
     }
 }
 
-const handleGetProductService = async (page: number, limit: number, name?: string) => {
+const handleGetProductService = async (page: number, limit: number, categoryName?: string) => {
     try {
         let currentPage = page ? page : 1;
         if (currentPage <= 0) currentPage = 1;
-        const products = await prisma.product.findMany({
+
+        const category = await prisma.category.findFirst({
             where: {
-                name: {
-                    contains: name
-                }
-            },
-            take: limit,
-            skip: (currentPage - 1) * limit
+                name: categoryName
+            }
         })
-        return products
+        const categoryId = category.id
+
+        const productArr = await prisma.product.findMany({
+            where: {
+                categoryId: categoryId
+            }
+        })
+
+        if (categoryName) {
+            const products = await prisma.product.findMany({
+                where: {
+                    categoryId: categoryId
+                },
+                take: limit,
+                skip: (currentPage - 1) * limit
+            })
+            let totalPages = productArr?.length / limit
+            return { products, totalPages }
+        } else {
+            const products = await prisma.product.findMany({
+                take: limit,
+                skip: (currentPage - 1) * limit
+            })
+            const allProduct = await getAllProduct()
+            let totalPages = allProduct?.length / limit
+            return { products, totalPages }
+        }
+
     } catch (error) {
         throw new Error("Không thể lấy danh sách sản phẩm");
     }
