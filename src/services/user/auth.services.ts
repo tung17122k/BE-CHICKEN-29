@@ -4,6 +4,7 @@ import { ACCOUNT_TYPE } from "../../config/constant";
 import { sendVerificationEmail } from "../../config/mail";
 import jwt from "jsonwebtoken";
 import { AppError } from "../../utils/appError";
+import { isEmailExist } from "../../validation/common";
 const saltRounds = 10;
 
 
@@ -205,4 +206,88 @@ const refreshTokenService = async (refresh_token: string) => {
 
 }
 
-export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService, hashPassword };
+const postRegisterSocialMediaService = async (email: string, type: string) => {
+    const emailExist = await isEmailExist(email)
+
+
+    try {
+        const userRole = await prisma.role.findFirst({
+            where: {
+                name: "USER"
+            }
+        })
+        console.log("userRole", userRole);
+
+
+        if (!emailExist) {
+            const user = await prisma.user.create({
+                data: {
+                    email: email,
+                    accountType: type,
+                    isVerified: true,
+                    address: "",
+                    phone: "",
+                    name: "",
+                    roleId: userRole.id,
+                }
+            })
+
+            const payload = {
+                id: user.id,
+                email: user.email,
+                role: userRole.name,
+                accountType: user.accountType,
+                name: user.name || "",
+                roleId: user.roleId,
+                phone: user.phone || "",
+                address: user.address || "",
+            }
+
+            const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+                expiresIn: '7d' // Thời gian hết hạn của token
+            });
+
+            const refresh_token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET as string, {
+                expiresIn: '30d',
+            });
+            return { access_token, refresh_token, user: payload };
+        } else {
+            const user = await prisma.user.findUnique({
+                where: {
+                    email: email,
+                    accountType: type
+                },
+                include: {
+                    role: true
+                }
+            })
+
+            const payload = {
+                id: user.id,
+                email: user.email,
+                role: user.role.name,
+                accountType: user.accountType,
+                name: user.name || "",
+                roleId: user.roleId,
+                phone: user.phone || "",
+                address: user.address || "",
+            }
+
+            const access_token = jwt.sign(payload, process.env.JWT_SECRET as string, {
+                expiresIn: '7d' // Thời gian hết hạn của token
+            });
+
+            const refresh_token = jwt.sign(payload, process.env.JWT_REFRESH_SECRET as string, {
+                expiresIn: '30d',
+            });
+            return { access_token, refresh_token, user: payload };
+        }
+    } catch (error) {
+        console.log("error", error);
+        throw new Error("Lỗi: Không thể tạo tài khoản người dùng");
+    }
+}
+
+
+
+export { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService, hashPassword, postRegisterSocialMediaService };

@@ -13,7 +13,8 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         "/verify",
         "/auth/google",
         "/auth/google/callback",
-        "/refresh-token"
+        "/refresh-token",
+        "/auth/social-media"
     ]
 
     if (whiteList.includes(path)) {
