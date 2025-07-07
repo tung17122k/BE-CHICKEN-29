@@ -14,7 +14,9 @@ const app = express()
 
 
 // config cors 
-app.use(cors())
+app.use(cors({
+
+}))
 
 // config req.body
 app.use(express.urlencoded({ extended: true }));

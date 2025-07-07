@@ -82,7 +82,8 @@ const postLoginService = async (email: string, password: string) => {
         const user = await prisma.user.findUnique({
             where: {
                 email: email,
-                isVerified: true
+                isVerified: true,
+                accountType: ACCOUNT_TYPE.SYSTEM
             },
             include: {
                 role: true

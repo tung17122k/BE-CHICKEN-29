@@ -94,5 +94,18 @@ const handleCreateProductService = async (name: string, price: number, descripti
     }
 }
 
+const getProductByIdService = async (id: number) => {
+    try {
+        const product = await prisma.product.findUnique({
+            where: {
+                id: id
+            }
+        })
+        return product
+    } catch (error) {
+        throw new Error("Error getting product by id")
+    }
+}
 
-export { countTotalPages, getAllProduct, handleGetProductService, handleCreateProductService };
+
+export { countTotalPages, getAllProduct, handleGetProductService, handleCreateProductService, getProductByIdService };

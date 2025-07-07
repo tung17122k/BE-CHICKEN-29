@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { countTotalPages, getAllProduct, handleCreateProductService, handleGetProductService } from "../../services/user/product.services";
+import { countTotalPages, getAllProduct, getProductByIdService, handleCreateProductService, handleGetProductService } from "../../services/user/product.services";
 import { ProductSchema, TProductSchema } from "../../validation/product/product.schema";
 
 const getProductController = async (req: Request, res: Response) => {
@@ -82,5 +82,29 @@ const postCreateProductController = async (req: Request, res: Response) => {
 
 }
 
+const getProductById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    console.log("id", id);
 
-export { getProductController, postCreateProductController };
+    try {
+        if (!id) {
+            res.status(400).json({
+                message: "Id product không hợp lệ"
+            });
+        }
+        const product = await getProductByIdService(+id)
+        if (product) {
+            res.status(200).json({
+                message: "Get product successfully",
+                data: product
+            })
+        }
+    } catch (error) {
+        res.status(500).json({
+            message: "Error getting product"
+        });
+    }
+}
+
+
+export { getProductController, postCreateProductController, getProductById };
