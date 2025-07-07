@@ -109,9 +109,11 @@ const postLogin = async (req: Request, res: Response) => {
 
                 res.status(200).json({
                     message: "Đăng nhập thành công",
-                    access_token: result.access_token,
-                    refresh_token: result.refresh_token,
-                    user: result.user
+                    data: {
+                        access_token: result.access_token,
+                        refresh_token: result.refresh_token,
+                        user: result.user
+                    }
                 });
             } else {
                 res.status(401).json({ message: "Invalid email or password" });

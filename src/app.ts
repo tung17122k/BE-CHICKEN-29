@@ -7,13 +7,16 @@ import "./config/passport"
 import cors from 'cors';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
+import initDatabase from './config/seed';
 
 
 const app = express()
 
 
 // config cors 
-app.use(cors())
+app.use(cors({
+
+}))
 
 // config req.body
 app.use(express.urlencoded({ extended: true }));
@@ -48,6 +51,8 @@ apiRoutes(app);
 // connect to database
 getConnection()
 
+// seeding database
+initDatabase()
 
 
 
