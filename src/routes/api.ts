@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController } from '../controllers/user/auth.controller';
+import { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController, loginSocialMediaController } from '../controllers/user/auth.controller';
 import { checkValidJwt } from '../middleware/jwt.middleware';
 import passport from 'passport';
 import { getProductById, getProductController, postCreateProductController } from '../controllers/user/product.controller';
@@ -26,6 +26,8 @@ const apiRoutes = (app: Express) => {
     );
 
     router.post("/refresh-token", refreshTokenController);
+
+    router.post('/auth/social-media', loginSocialMediaController)
 
     router.get('/product', getProductController)
 

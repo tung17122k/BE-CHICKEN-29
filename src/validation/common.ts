@@ -49,6 +49,10 @@ export const emailSchema = z.string().email({ message: "Email is invalid" }).ref
     return !existingUsers;
 }, { message: "Email already exists" });
 
+
+export const emailSocialSchema = z.string().email({ message: "Email is invalid" });
+export const typeSchema = z.string({ message: "Type is invalid" });
+
 export const passwordSchema = z
     .string()
     .min(8, { message: "Password must be at least 8 characters long" })
