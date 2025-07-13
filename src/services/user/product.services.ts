@@ -1,4 +1,5 @@
 import { prisma } from "../../config/client";
+import { InvalidCategoryError } from "../../utils/appError";
 
 const countTotalPages = async (limit: number) => {
     const totalItems = await prisma.product.count();
@@ -76,7 +77,19 @@ const handleGetProductService = async (page: number, limit: number, categoryName
 }
 
 const handleCreateProductService = async (name: string, price: number, description: string, quantity: number, sold: number, categoryId: number, image: string) => {
-    try {
+
+    // kiểm tra categoryId có thuộc categoryId không 
+    let isCategoryExist
+    const categoryList = await prisma.category.findMany({})
+    // console.log("category", categoryList);
+
+    for (let i = 0; i < categoryList.length; i++) {
+        if (categoryList[i].id === categoryId) {
+            isCategoryExist = true
+        }
+    }
+
+    if (isCategoryExist) {
         const newProduct = await prisma.product.create({
             data: {
                 name: name,
@@ -89,9 +102,10 @@ const handleCreateProductService = async (name: string, price: number, descripti
             }
         })
         return newProduct
-    } catch (error) {
-        throw new Error("Error creating product")
+    } else {
+        throw new InvalidCategoryError("Category không tồn tại");
     }
+
 }
 
 const getProductByIdService = async (id: number) => {

@@ -3,7 +3,7 @@ import { prisma } from "../../config/client";
 import { ACCOUNT_TYPE } from "../../config/constant";
 import { sendVerificationEmail } from "../../config/mail";
 import jwt from "jsonwebtoken";
-import { AppError } from "../../utils/appError";
+import { AppError, AuthenticationError } from "../../utils/appError";
 import { isEmailExist } from "../../validation/common";
 const saltRounds = 10;
 
@@ -119,7 +119,7 @@ const postLoginService = async (email: string, password: string) => {
 
         return { access_token, refresh_token, user: payload };
     } catch (error) {
-        throw new AppError(error.message, error.statusCode || 500);
+        throw new AuthenticationError("Email hoặc mật khẩu không đúng");
     }
 
 }
@@ -255,7 +255,6 @@ const postRegisterSocialMediaService = async (email: string, type: string) => {
             const user = await prisma.user.findUnique({
                 where: {
                     email: email,
-                    accountType: type
                 },
                 include: {
                     role: true

@@ -14,11 +14,6 @@ export const ProductSchema = z.object({
         .refine((num) => num > 0, {
             message: "Số lượng tối thiểu là 1",
         }),
-    sold: z.string()
-        .transform((val) => (val === "" ? 0 : Number(val)))
-        .refine((num) => num >= 0, {
-            message: "Đã bán được thiểu là 0",
-        }),
     categoryId: z.string()
         .transform((val) => (val === "" ? 0 : Number(val)))
         .refine((num) => num > 0, {

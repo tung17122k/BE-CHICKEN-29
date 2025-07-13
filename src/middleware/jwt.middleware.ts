@@ -17,9 +17,19 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         "/auth/social-media"
     ]
 
+    const getList = [
+        "/product",
+        "/category"
+    ]
+
     if (whiteList.includes(path)) {
         return next();
     }
+
+    if (req.method === 'GET' && getList.includes(path)) {
+        return next()
+    }
+
 
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -27,8 +37,7 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         res.status(401).json({ message: "Unauthorized access, token is missing" });
     } else {
         try {
-            console.log("req.method", req.method);
-
+            // console.log("req.method", req.method);
             const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
             if (path === "/users" && decoded.role !== "ADMIN") {
                 res.status(403).json({
