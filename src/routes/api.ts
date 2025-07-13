@@ -4,6 +4,8 @@ import { checkValidJwt } from '../middleware/jwt.middleware';
 import passport from 'passport';
 import { getProductById, getProductController, postCreateProductController } from '../controllers/user/product.controller';
 import fileUploadMiddleware from '../middleware/multer';
+import { getCategory } from '../controllers/user/category.controller';
+
 
 
 const router = express.Router();
@@ -34,6 +36,8 @@ const apiRoutes = (app: Express) => {
     router.post('/product', fileUploadMiddleware('image', 'images/product'), postCreateProductController);
 
     router.get('/product/:id', getProductById)
+
+    router.get('/category', getCategory)
 
     app.use('/', checkValidJwt, router);
 };

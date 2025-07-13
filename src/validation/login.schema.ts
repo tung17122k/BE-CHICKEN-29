@@ -4,14 +4,7 @@ import { isEmailExistWithLogin, passwordSchema } from "./common";
 
 
 
-const emailSchemaWithVerify = z.string().email({ message: "Email is invalid" }).refine(async (email) => {
-    const existingUsers = await isEmailExistWithLogin(email);
-    if (existingUsers) {
-        return true;
-    } else {
-        return false;
-    }
-}, { message: "Email không hợp lệ" });
+const emailSchemaWithVerify = z.string().email({ message: "Email Không hợp lệ" })
 
 
 export const LoginSchema = z.object({

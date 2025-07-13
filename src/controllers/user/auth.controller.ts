@@ -67,7 +67,7 @@ const postVerify = async (req: Request, res: Response) => {
 
         } else {
             const result = await postVerifyService(email, code)
-            console.log("result", result);
+            // console.log("result", result);
             if (result) {
                 res.status(200).json({ message: "Xác thực thành công" })
             }
@@ -93,12 +93,14 @@ const postLogin = async (req: Request, res: Response) => {
                 }
             })
             res.status(400).json({
-                message: "Validation error",
-                errors: errors
+                message: errors,
+                // errors: errors
             });
 
         } else {
             const result = await postLoginService(email, password);
+            console.log("result", result);
+
             if (result) {
                 res.cookie("refresh_token", result.refresh_token, {
                     // httpOnly: true, // Không thể truy cập từ JavaScript (chống XSS)
@@ -116,17 +118,15 @@ const postLogin = async (req: Request, res: Response) => {
                         user: result.user
                     }
                 });
-            } else {
-                res.status(401).json({ message: "Invalid email or password" });
             }
         }
     } catch (error) {
+        console.log("error", error);
         res.status(error.statusCode ? error.statusCode : 500).json({
-            error: error.message || "Internal server error",
+            message: error.message || "Internal server error",
         });
 
     }
-
 }
 
 
