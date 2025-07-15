@@ -42,7 +42,8 @@ const getProductController = async (req: Request, res: Response) => {
 }
 
 const postCreateProductController = async (req: Request, res: Response) => {
-    const { name, price, description, quantity, sold, categoryId } = req.body as TProductSchema;
+    const { name, price, description, quantity, categoryId } = req.body as TProductSchema;
+    const sold = 0;
     const validate = ProductSchema.safeParse(req.body);
     // console.log(">>>>validate", validate);
     if (validate.success === false) {
@@ -66,16 +67,15 @@ const postCreateProductController = async (req: Request, res: Response) => {
             const image = file?.filename ?? null;
             const result = await handleCreateProductService(name, +price, description, +quantity, +sold, +categoryId, image)
             if (result) {
-                res.status(200).json({
-                    message: "Product created successfully",
+                res.status(201).json({
+                    message: "Tạo mới sản phẩm thành công",
                     data: result
                 });
             }
         }
     } catch (error) {
-        console.log("error", error);
-        res.status(500).json({
-            message: "Error creating product"
+        res.status(error.statusCode ? error.statusCode : 500).json({
+            message: error.message || "Internal server error",
         });
     }
 

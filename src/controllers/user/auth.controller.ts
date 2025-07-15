@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { RegisterSchema, TRegisterSchema, } from "../../validation/register.schema";
-import { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService } from "../../services/user/auth.services";
+import { RegisterSchema, RegisterSocialSchema, TRegisterSchema, } from "../../validation/register.schema";
+import { postRegisterService, postVerifyService, postLoginService, GoogleCallbackService, refreshTokenService, postRegisterSocialMediaService } from "../../services/user/auth.services";
 import { TVerifySchema, VerifySchema } from "../../validation/verify.schema";
 import { LoginSchema, TLoginSchema } from "../../validation/login.schema";
 import { User } from "@prisma/client";
+import { ACCOUNT_TYPE } from "../../config/constant";
 
 const postRegister = async (req: Request, res: Response) => {
     const { email, password, confirmPassword } = req.body as TRegisterSchema
@@ -66,7 +67,7 @@ const postVerify = async (req: Request, res: Response) => {
 
         } else {
             const result = await postVerifyService(email, code)
-            console.log("result", result);
+            // console.log("result", result);
             if (result) {
                 res.status(200).json({ message: "Xác thực thành công" })
             }
@@ -92,12 +93,14 @@ const postLogin = async (req: Request, res: Response) => {
                 }
             })
             res.status(400).json({
-                message: "Validation error",
-                errors: errors
+                message: errors,
+                // errors: errors
             });
 
         } else {
             const result = await postLoginService(email, password);
+            console.log("result", result);
+
             if (result) {
                 res.cookie("refresh_token", result.refresh_token, {
                     // httpOnly: true, // Không thể truy cập từ JavaScript (chống XSS)
@@ -115,17 +118,15 @@ const postLogin = async (req: Request, res: Response) => {
                         user: result.user
                     }
                 });
-            } else {
-                res.status(401).json({ message: "Invalid email or password" });
             }
         }
     } catch (error) {
+        console.log("error", error);
         res.status(error.statusCode ? error.statusCode : 500).json({
-            error: error.message || "Internal server error",
+            message: error.message || "Internal server error",
         });
 
     }
-
 }
 
 
@@ -165,5 +166,45 @@ const refreshTokenController = async (req: Request, res: Response) => {
         });
     }
 }
+const loginSocialMediaController = async (req: Request, res: Response) => {
+    const { email, type } = req.body
+    try {
+        const validate = await RegisterSocialSchema.safeParseAsync(req.body);
+        console.log("validate", validate);
 
-export { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController };
+        if (!validate.success) {
+            const errorsZod = validate.error.issues;
+            const errors = errorsZod?.map((error) => {
+                return {
+                    field: error.path.join('.'),
+                    message: error.message
+                }
+            })
+            res.status(400).json({
+                message: "Validation error",
+                errors: errors
+            });
+        } else {
+            if (email && type !== ACCOUNT_TYPE.SYSTEM) {
+                const result = await postRegisterSocialMediaService(email, type);
+                console.log("result", result);
+                res.status(200).json({
+                    data: result
+                })
+            }
+        }
+
+
+    } catch (error) {
+        console.log("error.statusCode", error.statusCode);
+
+        res.status(error.statusCode ? error.statusCode : 500).json({
+            error: error.message || "Internal server error",
+        });
+    }
+}
+
+
+
+
+export { postRegister, postVerify, postLogin, GoogleCallbackController, refreshTokenController, loginSocialMediaController };

@@ -1,4 +1,5 @@
 import { prisma } from "../../config/client";
+import { InvalidCategoryError } from "../../utils/appError";
 
 const countTotalPages = async (limit: number) => {
     const totalItems = await prisma.product.count();

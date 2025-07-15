@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { prisma } from "../config/client";
-import { emailSchema, isEmailExist, passwordSchema } from "./common";
+import { emailSchema, emailSocialSchema, isEmailExist, passwordSchema, typeSchema } from "./common";
 
 
 
@@ -14,3 +14,10 @@ export const RegisterSchema = z.object({
 });
 
 export type TRegisterSchema = z.infer<typeof RegisterSchema>;
+
+export const RegisterSocialSchema = z.object({
+    email: emailSocialSchema,
+    type: typeSchema
+});
+
+export type TRegisterSocialSchema = z.infer<typeof RegisterSocialSchema>;
