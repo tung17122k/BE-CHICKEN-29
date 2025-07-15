@@ -78,34 +78,36 @@ const handleGetProductService = async (page: number, limit: number, categoryName
 
 const handleCreateProductService = async (name: string, price: number, description: string, quantity: number, sold: number, categoryId: number, image: string) => {
 
-    // kiểm tra categoryId có thuộc categoryId không 
-    let isCategoryExist
-    const categoryList = await prisma.category.findMany({})
-    // console.log("category", categoryList);
+    try {
+        // kiểm tra categoryId có thuộc categoryId không 
+        let isCategoryExist: boolean
+        const categoryList = await prisma.category.findMany({})
+        // console.log("category", categoryList);
 
-    for (let i = 0; i < categoryList.length; i++) {
-        if (categoryList[i].id === categoryId) {
-            isCategoryExist = true
-        }
-    }
-
-    if (isCategoryExist) {
-        const newProduct = await prisma.product.create({
-            data: {
-                name: name,
-                price: +price,
-                description: description,
-                quantity: +quantity,
-                sold: sold,
-                categoryId: categoryId,
-                image: image
+        for (let i = 0; i < categoryList.length; i++) {
+            if (categoryList[i].id === categoryId) {
+                isCategoryExist = true
             }
-        })
-        return newProduct
-    } else {
-        throw new InvalidCategoryError("Category không tồn tại");
-    }
+        }
 
+        if (isCategoryExist) {
+
+            const newProduct = await prisma.product.create({
+                data: {
+                    name: name,
+                    price: +price,
+                    description: description,
+                    quantity: +quantity,
+                    sold: sold,
+                    categoryId: categoryId,
+                    image: image
+                }
+            })
+            return newProduct
+        }
+    } catch (error) {
+        throw new Error("Error creating product")
+    }
 }
 
 const getProductByIdService = async (id: number) => {

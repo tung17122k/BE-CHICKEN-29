@@ -58,8 +58,7 @@ const postCreateProductController = async (req: Request, res: Response) => {
             }
         })
         res.status(400).json({
-            message: "Validation error",
-            errors: errors
+            message: errors,
         });
     }
     try {
