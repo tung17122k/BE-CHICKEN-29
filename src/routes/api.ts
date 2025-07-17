@@ -5,6 +5,7 @@ import passport from 'passport';
 import { getProductById, getProductController, postCreateProductController } from '../controllers/user/product.controller';
 import fileUploadMiddleware from '../middleware/multer';
 import { getCategory } from '../controllers/user/category.controller';
+import { getCartById, postProductToCart } from '../controllers/user/cart.controller';
 
 
 
@@ -38,6 +39,10 @@ const apiRoutes = (app: Express) => {
     router.get('/product/:id', getProductById)
 
     router.get('/category', getCategory)
+
+    router.post('/cart', postProductToCart)
+
+    router.get('/cart', getCartById)
 
     app.use('/', checkValidJwt, router);
 };

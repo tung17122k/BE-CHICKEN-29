@@ -65,3 +65,4 @@ export class InvalidCategoryError extends AppError {
         super(message, 400, code || 'INVALID_CATEGORY_ERROR');
     }
 }
+
