@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import 'dotenv/config';
+import { RequestUserPayload } from "../types";
 
 
 const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
@@ -38,7 +39,7 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
     } else {
         try {
             // console.log("req.method", req.method);
-            const decoded: any = jwt.verify(token, process.env.JWT_SECRET as string);
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as RequestUserPayload;
             if (path === "/users" && decoded.role !== "ADMIN") {
                 res.status(403).json({
                     message: "Forbidden. You are not allowed to access this resource.",
@@ -65,7 +66,7 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
 
             next();
         } catch (error) {
-            console.error("JWT verification failed:", error);
+            // console.error("JWT verification failed:", error);
             res.status(401).json({ message: "Invalid token" });
         }
     }
