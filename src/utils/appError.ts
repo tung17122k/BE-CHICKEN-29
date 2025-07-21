@@ -66,3 +66,10 @@ export class InvalidCategoryError extends AppError {
     }
 }
 
+export class CartUpdateError extends AppError {
+    constructor(message: string = 'Failed to update cart', metadata?: any) {
+        super(message, 400, 'CART_UPDATE_ERROR', metadata);
+    }
+}
+
+

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { CartSchema, TCartItem } from "../../validation/cart/cart.schema";
-import { getCartByIdService, postProductToCartService } from "../../services/user/cart.services";
-import { AppError } from "../../utils/appError";
+import { CartItemWithIdSchema, CartSchema, CartUpdateSchema, TCartItem, TCartItemWithId } from "../../validation/cart/cart.schema";
+import { getCartByIdService, postProductToCartService, updateCartService } from "../../services/user/cart.services";
+import { AppError, CartUpdateError } from "../../utils/appError";
 
 const postProductToCart = async (req: Request, res: Response) => {
     const { product }: { product: TCartItem[] } = req.body;
@@ -51,5 +51,41 @@ const getCartById = async (req: Request, res: Response) => {
     }
 }
 
+const updateCart = async (req: Request, res: Response) => {
+    const { cartDetails }: { cartDetails: TCartItemWithId[] } = req.body;
+    // console.log("cartDetails", cartDetails);
 
-export { postProductToCart, getCartById }
+    const user = req.user
+    const validate = await CartUpdateSchema.safeParseAsync({ cartDetails });
+    if (!validate.success) {
+        const errors = validate.error.issues.map((error) => ({
+            field: error.path.join('.'),
+            message: error.message,
+        }));
+        res.status(400).json({ message: errors });
+    }
+    try {
+        const result = await updateCartService(user, cartDetails)
+        if (result) {
+            res.status(200).json({ message: "Cập nhật giỏ hàng thành công", data: result })
+        }
+    } catch (error) {
+        console.log(error);
+        if (error instanceof CartUpdateError) {
+            res.status(error.statusCode).json({
+                message: error.message,
+                code: error.errorCode,
+                metadata: error.metadata || null
+            });
+        } else {
+            res.status(500).json({
+                message: 'Internal server error'
+            })
+        }
+
+    }
+
+}
+
+
+export { postProductToCart, getCartById, updateCart }

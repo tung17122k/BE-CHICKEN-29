@@ -1,7 +1,7 @@
 import { prisma } from "../../config/client";
 import { RequestUser } from "../../types";
-import { DatabaseError } from "../../utils/appError";
-import { TCartItem } from "../../validation/cart/cart.schema";
+import { AppError, CartUpdateError, DatabaseError } from "../../utils/appError";
+import { TCartItem, TCartItemWithId } from "../../validation/cart/cart.schema";
 
 
 
@@ -112,7 +112,6 @@ const postProductToCartService = async (user: RequestUser, productList: TCartIte
     } catch (error) {
         console.log("error", error);
     }
-
 }
 
 const getCartByIdService = async (user: RequestUser) => {
@@ -128,23 +127,62 @@ const getCartByIdService = async (user: RequestUser) => {
             },
             include: {
                 cartDetails: {
-
                     include: {
                         product: true
                     }
                 }
             }
         });
-        console.log("cart", cart);
+        // console.log("cart", cart);
         return cart;
 
 
     } catch (error) {
-        console.log("error", error);
+        // console.log("error", error);
         throw new DatabaseError();
     }
 }
 
+const updateCartService = async (user: RequestUser, cartDetailList: TCartItemWithId[]) => {
+    try {
+        let sum = 0
+        for (let i = 0; i < cartDetailList.length; i++) {
+            sum += Number(cartDetailList[i].quantity)
+        }
+        console.log("sum", sum);
+
+        // cap nhat tong san pham trong cart
+        const cart = await prisma.cart.update({
+            where: {
+                userId: user.id
+            },
+            data: {
+                sum: sum
+            }
+        })
+        // cap nhat cart detail
+
+        for (let i = 0; i < cartDetailList.length; i++) {
+            const { id, quantity } = cartDetailList[i];
+            if (quantity === 0) {
+                await prisma.cartDetail.delete({
+                    where: { id }
+                });
+            } else {
+                await prisma.cartDetail.update({
+                    where: { id },
+                    data: { quantity }
+                });
+            }
+        }
+        return cart
+
+    } catch (error) {
+        throw new CartUpdateError('Unable to update cart for user');
+    }
+
+}
+
 export {
-    postProductToCartService, getCartByIdService
+    postProductToCartService, getCartByIdService, updateCartService
 }
