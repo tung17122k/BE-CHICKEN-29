@@ -21,7 +21,7 @@ export const isProductExist = async (productId: number) => {
             id: productId
         }
     })
-    console.log("product", product);
+    // console.log("product", product);
 
     if (product) {
         return true
