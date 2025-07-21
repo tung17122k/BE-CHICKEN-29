@@ -8,21 +8,24 @@ const postProductToCart = async (req: Request, res: Response) => {
     const user = req.user
 
     const validate = await CartSchema.safeParseAsync({ product });
-    if (!validate.success) {
-        const errors = validate.error.issues.map((error) => ({
-            field: error.path.join('.'),
-            message: error.message,
-        }));
 
-        res.status(400).json({ message: errors });
-    }
 
     try {
-        const result = await postProductToCartService(user, product)
-        res.status(201).json({
-            message: "Thêm sản phẩm thành công",
-            data: result
-        });
+        if (!validate.success) {
+            const errors = validate.error.issues.map((error) => ({
+                field: error.path.join('.'),
+                message: error.message,
+            }));
+
+            res.status(400).json({ message: errors });
+        } else {
+            const result = await postProductToCartService(user, product)
+            res.status(201).json({
+                message: "Thêm sản phẩm thành công",
+                data: result
+            });
+        }
+
     } catch (error) {
         console.log("error", error)
         res.status(500).json({ message: "Lỗi hệ thống" });
