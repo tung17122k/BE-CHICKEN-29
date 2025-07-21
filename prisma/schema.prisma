@@ -40,17 +40,16 @@ model Role {
 }
 
 model Product {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(255)
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
   price       Int
-  image       String?      @db.VarChar(255)
-  description String       @db.MediumText
+  image       String?       @db.VarChar(255)
+  description String        @db.MediumText
   quantity    Int
-  sold        Int          @default(0)
+  sold        Int           @default(0)
   categoryId  Int
-  category    Category     @relation(fields: [categoryId], references: [id])
-  // cartDetail  CartDetail[]
-  // OrderDetail OrderDetail[]
+  category    Category      @relation(fields: [categoryId], references: [id])
+  orderDetail OrderDetail[]
   cartDetail  CartDetail[]
 
   @@map("products")
@@ -87,4 +86,34 @@ model CartDetail {
   @@index([cartId], map: "cart_detail_cartId_fkey")
   @@index([productId], map: "cart_detail_productId_fkey")
   @@map("cart_detail")
+}
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  totalPrice      Int
+  paymentMethod   String
+  paymentRef      String?
+  paymentStatus   String
+  receiverAddress String        @db.VarChar(255)
+  receiverName    String        @db.VarChar(255)
+  receiverPhone   String        @db.VarChar(255)
+  status          String        @default("PENDING") @db.VarChar(50)
+  userId          Int
+  orderDetails    OrderDetail[]
+
+  @@map("orders")
+}
+
+model OrderDetail {
+  id        Int     @id @default(autoincrement())
+  price     Int
+  quantity  Int
+  productId Int
+  orderId   Int?
+  order     Order?  @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId], map: "order_detail_orderId_fkey")
+  @@index([productId], map: "order_detail_productId_fkey")
+  @@map("order_detail")
 }

@@ -6,6 +6,7 @@ import { getProductById, getProductController, postCreateProductController } fro
 import fileUploadMiddleware from '../middleware/multer';
 import { getCategory } from '../controllers/user/category.controller';
 import { getCartById, postProductToCart, updateCart } from '../controllers/user/cart.controller';
+import { postPlaceOrder } from '../controllers/user/order.controller';
 
 
 
@@ -45,6 +46,8 @@ const apiRoutes = (app: Express) => {
     router.get('/cart', getCartById)
 
     router.patch('/cart', updateCart)
+
+    router.post('/checkout', postPlaceOrder)
 
     app.use('/', checkValidJwt, router);
 };

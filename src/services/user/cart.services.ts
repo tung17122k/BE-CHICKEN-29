@@ -149,7 +149,7 @@ const updateCartService = async (user: RequestUser, cartDetailList: TCartItemWit
         for (let i = 0; i < cartDetailList.length; i++) {
             sum += Number(cartDetailList[i].quantity)
         }
-        console.log("sum", sum);
+        // console.log("sum", sum);
 
         // cap nhat tong san pham trong cart
         const cart = await prisma.cart.update({
