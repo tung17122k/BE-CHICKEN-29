@@ -8,6 +8,7 @@ const initDatabase = async () => {
     const defaultPassword = await hashPassword("123456")
     const countProduct = await prisma.product.count();
     const countCategory = await prisma.category.count();
+    const countPaymentMethod = await prisma.paymentMethod.count();
 
     if (countRole === 0) {
         await prisma.role.createMany({
@@ -27,25 +28,6 @@ const initDatabase = async () => {
         const adminRole = await prisma.role.findFirst({
             where: { name: "ADMIN" }
         })
-        // if (adminRole)
-        //     await prisma.user.createMany({
-        //         data: [
-        //             {
-        //                 fullName: 'Admin',
-        //                 userName: 'Tung',
-        //                 password: defaultPassword,
-        //                 accountType: ACCOUNT_TYPE.SYSTEM,
-        //                 roleId: adminRole.id,
-        //             },
-        //             {
-        //                 fullName: "Admin",
-        //                 userName: 'Tung2',
-        //                 password: defaultPassword,
-        //                 accountType: ACCOUNT_TYPE.SYSTEM,
-        //                 roleId: adminRole.id,
-        //             }
-        //         ]
-        //     })
     }
     if (countRole === 0 && count === 0) {
         console.log("Database already seeded");
@@ -60,9 +42,6 @@ const initDatabase = async () => {
             ]
         })
     }
-
-
-
     if (countProduct === 0) {
 
         await prisma.product.createMany({
@@ -139,6 +118,14 @@ const initDatabase = async () => {
                 }
             ]
         })
+    }
+    if (countPaymentMethod === 0) {
+        await prisma.paymentMethod.createMany({
+            data: [
+                { name: 'COD' },
+                { name: 'BANKING' }
+            ]
+        });
     }
     if (countRole !== 0 && count !== 0 && countProduct !== 0) {
         console.log(">>> ALREADY INIT DATA...");

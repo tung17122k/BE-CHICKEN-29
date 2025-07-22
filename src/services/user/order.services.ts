@@ -1,8 +1,8 @@
 import { prisma } from "../../config/client"
 import { RequestUser } from "../../types"
 
-const handlePlaceOrder = async (userId: number, receiverName: string, receiverAddress: string, receiverPhone: string) => {
 
+const handlePlaceOrder = async (userId: number, receiverName: string, receiverAddress: string, receiverPhone: string, paymentMethod: string) => {
 
     return await prisma.$transaction(async (tx) => {
         const cart = await tx.cart.findUnique({
@@ -15,6 +15,16 @@ const handlePlaceOrder = async (userId: number, receiverName: string, receiverAd
         })
         console.log("cart", cart);
 
+        const paymentMethodData = await tx.paymentMethod.findFirst({
+            where: {
+                name: paymentMethod
+            }
+        })
+
+        if (!paymentMethodData) {
+            throw new Error("Phương thức thanh toán không hợp lệ");
+        }
+
         if (cart) {
             let totalPrice = cart.cartDetails.reduce((sum, item) => sum + item.price * item.quantity, 0)
             // console.log("totalPrice", totalPrice);
@@ -24,12 +34,13 @@ const handlePlaceOrder = async (userId: number, receiverName: string, receiverAd
                 quantity: item.quantity,
                 productId: item.productId
             })) ?? []
+
             const createdOrder = await tx.order.create({
                 data: {
                     receiverName,
                     receiverAddress,
                     receiverPhone,
-                    paymentMethod: 'COD',
+                    paymentMethodId: paymentMethodData.id,
                     paymentStatus: 'PAYMENT_UNPAID',
                     status: "PENDING",
                     totalPrice: totalPrice,
@@ -76,20 +87,19 @@ const handlePlaceOrder = async (userId: number, receiverName: string, receiverAd
                     }
                 })
             }
-            return {
-                message: "Đặt hàng thành công",
-                data: createdOrder
-            }
+            // console.log("createdOrder.id", createdOrder.id)
+            return createdOrder
+
+
+
         }
     })
 
 
 
-
-
-
-
 }
+
+
 export {
     handlePlaceOrder
 }

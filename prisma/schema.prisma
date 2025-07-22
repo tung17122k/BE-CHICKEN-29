@@ -89,17 +89,18 @@ model CartDetail {
 }
 
 model Order {
-  id              Int           @id @default(autoincrement())
+  id              Int            @id @default(autoincrement())
   totalPrice      Int
-  paymentMethod   String
   paymentRef      String?
   paymentStatus   String
-  receiverAddress String        @db.VarChar(255)
-  receiverName    String        @db.VarChar(255)
-  receiverPhone   String        @db.VarChar(255)
-  status          String        @default("PENDING") @db.VarChar(50)
+  receiverAddress String         @db.VarChar(255)
+  receiverName    String         @db.VarChar(255)
+  receiverPhone   String         @db.VarChar(255)
+  status          String         @default("PENDING") @db.VarChar(50)
   userId          Int
   orderDetails    OrderDetail[]
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  paymentMethodId Int?
 
   @@map("orders")
 }
@@ -116,4 +117,12 @@ model OrderDetail {
   @@index([orderId], map: "order_detail_orderId_fkey")
   @@index([productId], map: "order_detail_productId_fkey")
   @@map("order_detail")
+}
+
+model PaymentMethod {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique @db.VarChar(100)
+  orders Order[]
+
+  @@map("payment_methods")
 }
