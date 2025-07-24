@@ -7,7 +7,8 @@ import { OrderSchema } from "../../validation/order/order.schema";
 
 const postPlaceOrder = async (req: Request, res: Response) => {
     const user = req.user
-    const { receiverName, receiverAddress, receiverPhone, paymentMethod } = req.body
+    const ipAddr = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '';
+    const { receiverName, receiverAddress, receiverPhone, paymentMethod, bankCode } = req.body
     const validate = await OrderSchema.safeParseAsync({ receiverName, receiverAddress, receiverPhone });
     try {
         if (!validate.success) {
@@ -17,7 +18,7 @@ const postPlaceOrder = async (req: Request, res: Response) => {
             }));
             res.status(400).json({ message: errors });
         } else {
-            const result = await handlePlaceOrder(user.id, receiverName, receiverAddress, receiverPhone, paymentMethod)
+            const result = await handlePlaceOrder(user.id, receiverName, receiverAddress, receiverPhone, paymentMethod, ipAddr, bankCode);
             if (result) {
                 res.status(200).json({ message: "Order placed successfully", data: result });
             }
