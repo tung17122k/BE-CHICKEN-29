@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { handlePlaceOrder } from "../../services/user/order.services";
+import { handleGetOrderHistory, handlePlaceOrder } from "../../services/user/order.services";
 import { OrderSchema } from "../../validation/order/order.schema";
 
 
@@ -31,9 +31,19 @@ const postPlaceOrder = async (req: Request, res: Response) => {
 }
 
 
+const getOrderHistoryController = async (req: Request, res: Response) => {
+    const user = req.user;
+    const result = await handleGetOrderHistory(user.id)
+    if (result) {
+        res.status(200).json({ message: "Order history retrieved successfully", data: result });
+    } else {
+        res.status(404).json({ message: "No orders found" });
+    }
+}
+
 
 
 
 export {
-    postPlaceOrder
+    postPlaceOrder, getOrderHistoryController
 }

@@ -3,11 +3,11 @@ import { countTotalPages, getAllProduct, getProductByIdService, handleCreateProd
 import { ProductSchema, TProductSchema } from "../../validation/product/product.schema";
 
 const getProductController = async (req: Request, res: Response) => {
-    const { page, limit, category } = req.query;
+    const { page, limit, category, query } = req.query;
     try {
         if (!page && !limit) {
             if (!category) {
-                const products = await getAllProduct(category as string);
+                const products = await getAllProduct(category as string, query as string);
                 res.status(200).json({
                     message: "Get product successfully",
                     data: products,
