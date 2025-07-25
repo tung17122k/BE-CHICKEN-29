@@ -15,7 +15,10 @@ const checkValidJwt = (req: Request, res: Response, next: NextFunction) => {
         "/auth/google",
         "/auth/google/callback",
         "/refresh-token",
-        "/auth/social-media"
+        "/auth/social-media",
+        '/create_payment_url',
+        '/vnpay_return',
+        '/vnpay_ipn'
     ]
 
     const getList = [

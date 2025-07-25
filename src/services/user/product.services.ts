@@ -7,7 +7,7 @@ const countTotalPages = async (limit: number) => {
     return totalPages
 }
 
-const getAllProduct = async (categoryName?: string) => {
+const getAllProduct = async (categoryName?: string, query?: string) => {
     const category = await prisma.category.findFirst({
         where: {
             name: categoryName
@@ -25,6 +25,16 @@ const getAllProduct = async (categoryName?: string) => {
             return products
         } else {
             const products = await prisma.product.findMany()
+            if (query) {
+                const products = await prisma.product.findMany({
+                    where: {
+                        description: {
+                            contains: query,
+                        }
+                    }
+                })
+                return products
+            }
             return products
         }
     } catch (error) {

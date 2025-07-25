@@ -6,7 +6,10 @@ import { getProductById, getProductController, postCreateProductController } fro
 import fileUploadMiddleware from '../middleware/multer';
 import { getCategory } from '../controllers/user/category.controller';
 import { getCartById, postProductToCart, updateCart } from '../controllers/user/cart.controller';
-import { postPlaceOrder } from '../controllers/user/order.controller';
+import { getOrderHistoryController, postPlaceOrder } from '../controllers/user/order.controller';
+import { getVNPayIpnController, getVNPayReturnController } from '../controllers/user/payment.controller';
+// import { postCreatePaymentUrl } from '../controllers/user/payment.controller';
+
 
 
 
@@ -48,6 +51,13 @@ const apiRoutes = (app: Express) => {
     router.patch('/cart', updateCart)
 
     router.post('/checkout', postPlaceOrder)
+
+
+    router.get('/vnpay_return', getVNPayReturnController)
+
+    router.get('/vnpay_ipn', getVNPayIpnController)
+
+    router.get('/order-history', getOrderHistoryController)
 
     app.use('/', checkValidJwt, router);
 };

@@ -4,3 +4,4 @@ export const ACCOUNT_TYPE = {
     GOOGLE: "GOOGLE",
     GITHUB: "GITHUB",
 }
+
