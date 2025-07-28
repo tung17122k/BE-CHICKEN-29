@@ -197,8 +197,14 @@ const refreshTokenService = async (refresh_token: string) => {
                 expiresIn: '7d'
             }
         );
+        const newRefreshToken = jwt.sign(
+            payload, process.env.JWT_REFRESH_SECRET as string,
+            {
+                expiresIn: '30d'
+            }
+        );
 
-        return { access_token: newAccessToken };
+        return { access_token: newAccessToken, refresh_token: newRefreshToken, user: payload };
     } catch (error) {
         throw new AppError(error.message, error.statusCode);
     }
