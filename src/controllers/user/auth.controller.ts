@@ -106,7 +106,7 @@ const postLogin = async (req: Request, res: Response) => {
                     // httpOnly: true, // Không thể truy cập từ JavaScript (chống XSS)
                     // secure: true, // Chỉ gửi qua HTTPS (cần bật khi deploy)
                     sameSite: "strict",
-                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày
+                    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
                 });
 
 
@@ -146,18 +146,23 @@ const GoogleCallbackController = async (req: Request, res: Response, next: NextF
 
 const refreshTokenController = async (req: Request, res: Response) => {
     try {
-        const refresh_token = req.cookies.refresh_token;
+        // const refresh_token = req.cookies.refresh_token;
+        const refresh_token = req.body.refresh_token;
+        console.log("refresh_token", refresh_token);
+
         if (!refresh_token) {
             res.status(401).json({
                 message: "Refresh token không hợp lệ.",
             });
+        } else {
+            const result = await refreshTokenService(refresh_token)
+            // console.log("result", result);
+            res.status(200).json({
+                message: "Token làm mới thành công",
+                data: result,
+            });
         }
-        const result = await refreshTokenService(refresh_token)
-        console.log("result", result);
-        res.status(200).json({
-            message: "Token làm mới thành công",
-            data: result,
-        });
+
     } catch (error) {
         console.log("error.statusCode", error.statusCode);
 
